@@ -17,7 +17,7 @@ if (isset($_POST['body'])) {
     // 元のファイル名から拡張子を取得
     $pathinfo = pathinfo($_FILES['image']['name']);
     $extension = $pathinfo['extension'];
-    // 新しいファイル名を決める。他の投稿の画像ファイルと重複しないように時間+乱数で決める。
+    // 新しいファイル名を決める（時間+乱数）
     $image_filename = strval(time()) . '.' . bin2hex(random_bytes(25)) . '.' . $extension;
 
     $filepath = '/var/www/upload/image/' . $image_filename;
@@ -31,14 +31,13 @@ if (isset($_POST['body'])) {
     ':image_filename' => $image_filename,
   ]);
 
-  // 処理が終わったらリダイレクトする
-  // リダイレクトしないと，リロード時にまた同じ内容でPOSTすることになる
+  // 処理が終わったらリダイレクト
   header("HTTP/1.1 302 Found");
   header("Location: ./kadaiimagetest.php");
   return;
 }
 
-// ▼▼▼ ここから「ページング対応」: 1ページ10件 ▼▼▼
+// ▼▼▼ ページング対応 ▼▼▼
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 if ($page < 1) { $page = 1; }
 
@@ -57,14 +56,35 @@ if ($skip_count >= $count_all && $count_all > 0) {
   return;
 }
 
-// いままで保存してきたものを取得（ページング版）
+// データ取得（ページング）
 $select_sth = $dbh->prepare('SELECT * FROM bbs_entries ORDER BY created_at DESC LIMIT :limit OFFSET :offset');
 $select_sth->bindParam(':limit', $count_per_page, PDO::PARAM_INT);
 $select_sth->bindParam(':offset', $skip_count, PDO::PARAM_INT);
 $select_sth->execute();
+
+/* ▼ レスアンカー用関数（>>番号 → ページ付きリンクに変換） */
+function linkify_with_page($safe_html_text, PDO $dbh, int $per_page){
+  return preg_replace_callback('/&gt;&gt;(\d+)/', function($m) use ($dbh, $per_page){
+    $id = (int)$m[1];
+
+    // その投稿の作成日時を取得
+    $q1 = $dbh->prepare('SELECT created_at FROM bbs_entries WHERE id = :id');
+    $q1->execute([':id' => $id]);
+    $row = $q1->fetch(PDO::FETCH_ASSOC);
+    if (!$row) return $m[0];
+
+    // 新しい順でその投稿が何番目かを計算
+    $q2 = $dbh->prepare('SELECT COUNT(*) FROM bbs_entries WHERE created_at >= :ts');
+    $q2->execute([':ts' => $row['created_at']]);
+    $pos = (int)$q2->fetchColumn();
+    $page = (int)floor(($pos - 1) / $per_page) + 1;
+
+    return '<a href="?page='.$page.'#post-'.$id.'">&gt;&gt;'.$id.'</a>';
+  }, $safe_html_text);
+}
 ?>
 
-<!-- フォームのPOST先はこのファイル自身です -->
+<!-- 投稿フォーム -->
 <form method="POST" action="./kadaiimagetest.php" enctype="multipart/form-data">
   <textarea name="body" required></textarea>
   <div style="margin: 1em 0;">
@@ -75,7 +95,7 @@ $select_sth->execute();
 
 <hr>
 
-<!-- ===== ページ情報（上のみ表示） ===== -->
+<!-- ページ情報 -->
 <div class="pager" style="max-width:600px;margin:10px auto 16px;text-align:center;">
   <div style="margin-bottom:8px;">
     <?= (int)$page ?> ページ目 / 全 <?= (int)$total_pages ?> ページ
@@ -95,15 +115,18 @@ $select_sth->execute();
 </div>
 
 <?php foreach($select_sth as $entry): ?>
+  <!-- 各投稿のアンカー -->
+  <a id="post-<?= (int)$entry['id'] ?>"></a>
+
   <dl style="margin-bottom: 1em; padding-bottom: 1em; border-bottom: 1px solid #ccc;">
     <dt>ID</dt>
-    <dd><?= $entry['id'] ?></dd>
+    <dd><?= $entry['id'] ?> <a href="#post-<?= $entry['id'] ?>">#<?= $entry['id'] ?></a></dd>
     <dt>日時</dt>
     <dd><?= $entry['created_at'] ?></dd>
     <dt>内容</dt>
     <dd>
-      <?= nl2br(htmlspecialchars($entry['body'])) ?>  <!-- 必ず htmlspecialchars() すること -->
-      <?php if(!empty($entry['image_filename'])): ?>  <!-- 画像がある場合は img 要素を使って表示 -->
+      <?= linkify_with_page(nl2br(htmlspecialchars($entry['body'], ENT_QUOTES, 'UTF-8')), $dbh, $count_per_page) ?>
+      <?php if(!empty($entry['image_filename'])): ?>
         <div>
           <img src="/image/<?= $entry['image_filename'] ?>" style="max-height: 10em;">
         </div>
@@ -115,45 +138,43 @@ $select_sth->execute();
 <link rel="stylesheet" href="./css/style.css">
 
 <script>
-// フォーム送信イベントに割り込む
+// ▼ 画像が5MB超なら自動縮小して送信
 document.querySelector("form").addEventListener("submit", e => {
   const input = document.getElementById("imageInput");
-  if (!input.files.length) return;                // 画像がなければそのまま送信
+  if (!input.files.length) return;
   const file = input.files[0];
-  if (!file.type.startsWith("image/")) return;    // 画像以外ならそのまま送信
-  if (file.size <= 5*1024*1024) return;           // 5MB以下ならそのまま送信
+  if (!file.type.startsWith("image/")) return;
+  if (file.size <= 5*1024*1024) return;
 
-  e.preventDefault();                             // 送信を止める
+  e.preventDefault();
 
-  // 選んだ画像をブラウザで読み込む
   const img = new Image();
   img.src = URL.createObjectURL(file);
 
   img.onload = () => {
-    const max = 1000;                             // 縮小後の最大長辺サイズ
+    const max = 1000;
     let w = img.width, h = img.height;
     if (w > h && w > max) { h = h*max/w; w = max; }
     else if (h >= w && h > max) { w = w*max/h; h = max; }
 
-    // Canvasに描画
     const cv = document.createElement("canvas");
     cv.width = w; cv.height = h;
     cv.getContext("2d").drawImage(img, 0, 0, w, h);
 
-    // 元の形式 (file.type) のまま出力
     cv.toBlob(b => {
-      if (!b || b.size > 5*1024*1024) {           // 縮小後でも大きすぎたら弾く
+      if (!b || b.size > 5*1024*1024) {
         alert("画像が大きすぎます");
         return;
       }
-
-      // Fileを作り直して input.files を置き換え
       const dt = new DataTransfer();
       dt.items.add(new File([b], file.name, {type: file.type}));
       input.files = dt.files;
-
-      e.target.submit();                          // 縮小版で再送信
-    }, file.type); // ← JPEG固定じゃなく file.type をそのまま使う
+      e.target.submit();
+    }, file.type);
   };
 });
 </script>
+
+
+
+

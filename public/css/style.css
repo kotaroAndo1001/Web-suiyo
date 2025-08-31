@@ -1,7 +1,8 @@
+
 /* ===== 全体 ===== */
 body {
-  background: #f9fafb;   /* 明るいグレー背景 */
-  color: #111;
+  background: #eef2ff;   /* 薄い青背景 */
+  color: #1e3a8a;        /* 深めの青文字 */
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
   line-height: 1.6;
   text-align: center;
@@ -17,8 +18,9 @@ form {
   max-width: 600px;
   background: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 6px 18px rgba(0,0,0,.08);
+  box-shadow: 0 6px 18px rgba(59, 130, 246, .15); /* 青っぽい影 */
   text-align: left;
+  border: 1px solid #bfdbfe; /* 青系の枠線 */
 }
 
 /* 入力欄 */
@@ -26,29 +28,29 @@ textarea {
   width: 100%;
   min-height: 120px;
   resize: vertical;
-  border: 1px solid #d1d5db;
+  border: 1px solid #93c5fd;
   border-radius: 8px;
   padding: 12px;
   font-size: 15px;
   background: #ffffff;
-  color: #111;
+  color: #1e3a8a;
 }
 textarea:focus {
   outline: none;
-  border-color: #4f46e5;
-  box-shadow: 0 0 0 3px rgba(79,70,229,.15);
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,.25);
 }
 
 /* ファイル選択 */
 input[type="file"] {
   font-size: 14px;
-  color: #374151;
+  color: #1e40af;
 }
 
 /* 送信ボタン */
 button[type="submit"] {
   align-self: flex-end;
-  background: #4f46e5;
+  background: #2563eb;
   color: #fff;
   border: none;
   padding: 10px 20px;
@@ -59,7 +61,7 @@ button[type="submit"] {
   transition: background 0.2s;
 }
 button[type="submit"]:hover {
-  background: #6366f1;
+  background: #1d4ed8;
 }
 
 /* ===== 投稿一覧 ===== */
@@ -70,18 +72,20 @@ dl {
   max-width: 600px;
   background: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,.05);
+  box-shadow: 0 4px 12px rgba(37,99,235,.15);
   text-align: left;
+  border: 1px solid #bfdbfe;
 }
 
 dt {
   font-size: 13px;
   font-weight: bold;
-  color: #6b7280;
+  color: #3b82f6; /* 見出しは鮮やかな青 */
 }
 dd {
   margin: 0 0 12px 0;
   font-size: 15px;
+  color: #1e3a8a;
 }
 
 /* 画像を中央寄せ＆丸める */
@@ -91,7 +95,34 @@ img {
   max-width: 100%;
   height: auto;
   border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0,0,0,.1);
+  box-shadow: 0 2px 6px rgba(37,99,235,.2);
+}
+
+/* ===== ページャー ===== */
+.pager a {
+  color: #2563eb;
+  font-weight: 600;
+  text-decoration: none;
+  margin: 0 8px;
+}
+.pager a:hover {
+  text-decoration: underline;
+}
+
+/* ===== レスアンカー強調 ===== */
+dd a[href^="#post-"] {
+  color: #2563eb;
+  font-size: 0.9em;
+  text-decoration: none;
+  margin-left: 6px;
+}
+dd a[href^="#post-"]:hover {
+  text-decoration: underline;
+}
+:target {
+  background: rgba(191,219,254,.4); /* 青系のハイライト */
+  border-radius: 8px;
+  transition: background 0.4s;
 }
 
 /* ===== スマホ対応 ===== */
@@ -101,5 +132,6 @@ img {
     padding: 16px;
   }
 }
+
 
 

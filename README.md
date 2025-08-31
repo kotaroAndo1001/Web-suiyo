@@ -41,19 +41,23 @@ sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 ### Git インストール
 ```bash
 sudo yum install -y git
-
 ```
 
-###セットアップ手順
+### セットアップ手順
 1. リポジトリを取得
+```bash
 git clone https://github.com/<ユーザー名>/<リポジトリ名>.git
 cd <リポジトリ名>
+```
 
 2. コンテナをビルド・起動
+```bash
 docker compose build
 docker compose up -d
+```
 
 3. MySQL にテーブルを作成
+```sql
 CREATE DATABASE kadai_db;
 USE kadai_db;
 CREATE TABLE bbs_entries (
@@ -62,3 +66,4 @@ CREATE TABLE bbs_entries (
   image_filename VARCHAR(255),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+```

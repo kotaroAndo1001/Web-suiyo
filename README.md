@@ -27,18 +27,24 @@ sudo systemctl start dockers
 sudo systemctl enable docker
 sudo usermod -a -G docker ec2-user
 
-### Docker Compose インストール
+```
+
+## Docker Compose インストール
 ```bash
 sudo mkdir -p /usr/local/lib/docker/cli-plugins/
 sudo curl -SL https://github.com/docker/compose/releases/download/v2.36.0/docker-compose-$(uname -s)-$(uname -m) \
  -o /usr/local/lib/docker/cli-plugins/docker-compose
 sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 
+```
+
 ### Git インストール
 ```bash
 sudo yum install -y git
 
-セットアップ手順
+```
+
+###セットアップ手順
 1. リポジトリを取得
 git clone https://github.com/<ユーザー名>/<リポジトリ名>.git
 cd <リポジトリ名>

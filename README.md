@@ -15,6 +15,7 @@
 - Docker
 - Docker Compose
 - Git
+- MySQL
 
 ---
 
@@ -57,6 +58,8 @@ docker compose up -d
 ```
 
 3. MySQL にテーブルを作成
+MySQL コンテナに入って kadai_db を選択してログイン
+docker compose exec mysql mysql kadai_db
 ```sql
 CREATE DATABASE kadai_db;
 USE kadai_db;

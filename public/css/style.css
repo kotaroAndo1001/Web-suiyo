@@ -128,10 +128,19 @@ dd a[href^="#post-"]:hover {
 /* ===== スマホ対応 ===== */
 @media (max-width: 640px) {
   form, dl {
-    margin: 16px;
-    padding: 16px;
+    margin: 30px;
+    padding: 30px;
+  }
+
+  textarea {
+    min-height: 180px;
+    font-size: 20px;     
+  }
+
+  input[type="file"],
+  button[type="submit"] {
+    font-size: 20px;   
   }
 }
-
 
 

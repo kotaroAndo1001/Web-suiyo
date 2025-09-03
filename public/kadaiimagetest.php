@@ -85,6 +85,10 @@ function linkify_with_page($safe_html_text, PDO $dbh, int $per_page){
 ?>
 
 <!-- 投稿フォーム -->
+<div style="text-align:center; margin: lem 0;">
+  <h1>技術各論掲示板</h1>
+</div>
+
 <form method="POST" action="./kadaiimagetest.php" enctype="multipart/form-data">
   <textarea name="body" required></textarea>
   <div style="margin: 1em 0;">
